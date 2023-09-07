@@ -22,8 +22,6 @@ class AutoTracking(object):
         The main function where we read the Excel file and write the file to json.
         """
         df: DataFrame = pd.read_excel(self.input_file_path)
-        os.environ['XL_IDP_PATH_IMPORT'] = "/home/timur/sambashare/import"
-        os.environ['XL_IDP_PATH_VSK_IMPORT'] = "/home/timur/sambashare/import/import_vsk"
         self.write_rows_by_terminal(df, "НУТЭП", f"{os.environ['XL_IDP_PATH_IMPORT']}/lines_nutep/flat_import_nutep")
         self.write_rows_by_terminal(df, "ВСК", f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/flat_import_vsk")
 
