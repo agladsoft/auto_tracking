@@ -25,8 +25,19 @@ class AutoTracking(object):
         for column in group_columns:
             if not column[0][0]:
                 column[1]['is_auto_tracking'] = False
-                column[1]['is_auto_tracking'] = None
+                column[1]['is_auto_tracking_ok'] = None
             column[1].to_excel(f"{path}/{column[0][1]}.{column[0][2]:02d} auto_tracking.xlsx", index=False)
+
+    @staticmethod
+    def change_types_in_columns(df: DataFrame) -> None:
+        """
+        Change types in columns to bool.
+        :param df: DataFrame.
+        :return:
+        """
+        df["enforce_auto_tracking"] = df["enforce_auto_tracking"].astype(bool)
+        df["is_auto_tracking"] = df["is_auto_tracking"].astype(bool)
+        df["is_auto_tracking_ok"] = df["is_auto_tracking_ok"].astype(bool)
 
     def main(self) -> None:
         """
@@ -34,6 +45,7 @@ class AutoTracking(object):
         :return:
         """
         df: DataFrame = pd.read_excel(self.input_file_path)
+        self.change_types_in_columns(df)
         self.write_rows_by_terminal(df, "НУТЭП", f"{os.environ['XL_IDP_PATH_IMPORT']}/"
                                                  f"lines_nutep/flat_import_nutep_tracking_update")
         self.write_rows_by_terminal(df, "ВСК", f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/"
