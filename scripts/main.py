@@ -34,8 +34,10 @@ class AutoTracking(object):
         :return:
         """
         df: DataFrame = pd.read_excel(self.input_file_path)
-        self.write_rows_by_terminal(df, "НУТЭП", f"{os.environ['XL_IDP_PATH_IMPORT']}/lines_nutep/flat_import_nutep")
-        self.write_rows_by_terminal(df, "ВСК", f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/flat_import_vsk")
+        self.write_rows_by_terminal(df, "НУТЭП", f"{os.environ['XL_IDP_PATH_IMPORT']}/"
+                                                 f"lines_nutep/flat_import_nutep_tracking_update")
+        self.write_rows_by_terminal(df, "ВСК", f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/"
+                                               f"flat_import_vsk_tracking_update")
 
 
 if __name__ == "__main__":
