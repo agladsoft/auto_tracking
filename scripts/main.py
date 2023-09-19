@@ -20,13 +20,13 @@ class AutoTracking(object):
         :return:
         """
         df: DataFrame = df.loc[df['terminal'] == value]
-        group_columns: DataFrameGroupBy = df.groupby(['enforce_auto_tracking', 'year', 'month'])
+        group_columns: DataFrameGroupBy = df.groupby(['enforce_auto_tracking', 'original_file_name'])
         column: Tuple[Tuple, DataFrame]
         for column in group_columns:
             if not column[0][0]:
                 column[1]['is_auto_tracking'] = False
                 column[1]['is_auto_tracking_ok'] = None
-            column[1].to_excel(f"{path}/{column[0][1]}.{column[0][2]:02d} auto_tracking.xlsx", index=False)
+            column[1].to_excel(f"{path}/{column[0][1].replace('.csv', '')}", index=False)
 
     @staticmethod
     def change_types_in_columns(df: DataFrame) -> None:
