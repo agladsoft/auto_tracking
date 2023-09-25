@@ -50,6 +50,10 @@ class AutoTracking(object):
                                                  f"lines_nutep/flat_import_nutep_tracking_update")
         self.write_rows_by_terminal(df, "ВСК", f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/"
                                                f"flat_import_vsk_tracking_update")
+        self.write_rows_by_terminal(df, "НУТЭП", f"{os.environ['XL_IDP_PATH_EXPORT']}/"
+                                                 f"lines_nutep/flat_export_nutep_tracking_update")
+        self.write_rows_by_terminal(df, "ВСК", f"{os.environ['XL_IDP_PATH_VSK_EXPORT']}/"
+                                               f"flat_import_export_tracking_update")
 
 
 if __name__ == "__main__":
