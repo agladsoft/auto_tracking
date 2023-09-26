@@ -47,13 +47,17 @@ class AutoTracking(object):
         """
         df: DataFrame = pd.read_excel(self.input_file_path)
         self.change_types_in_columns(df)
+        os.environ["XL_IDP_PATH_IMPORT"] = "/home/timur/sambashare/import"
+        os.environ["XL_IDP_PATH_VSK_IMPORT"] = "/home/timur/sambashare/import/import_vsk"
+        os.environ["XL_IDP_PATH_EXPORT"] = "/home/timur/sambashare/export"
+        os.environ["XL_IDP_PATH_VSK_EXPORT"] = "/home/timur/sambashare/export/export_vsk"
         self.write_rows_by_terminal(df, "import", "НУТЭП", f"{os.environ['XL_IDP_PATH_IMPORT']}/"
                                                            f"lines_nutep/flat_import_nutep_tracking_update")
         self.write_rows_by_terminal(df, "import", "ВСК", f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/"
                                                          f"flat_import_vsk_tracking_update")
         self.write_rows_by_terminal(df, "export", "НУТЭП", f"{os.environ['XL_IDP_PATH_EXPORT']}/"
                                                            f"lines_nutep/flat_export_nutep_tracking_update")
-        self.write_rows_by_terminal(df, "export" "ВСК", f"{os.environ['XL_IDP_PATH_VSK_EXPORT']}/"
+        self.write_rows_by_terminal(df, "export", "ВСК", f"{os.environ['XL_IDP_PATH_VSK_EXPORT']}/"
                                                         f"flat_import_export_tracking_update")
 
 
