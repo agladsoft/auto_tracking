@@ -50,16 +50,16 @@ class AutoTracking(object):
         """
         df: DataFrame = pd.read_excel(self.input_file_path)
         self.change_types_in_columns(df)
-        self.write_rows_by_terminal(df, "import", ["НУТЭП"], f"{os.environ['XL_IDP_PATH_IMPORT']}/"
-                                                             f"lines_nutep/flat_import_nutep_tracking_update")
-        self.write_rows_by_terminal(df, "import", ["ВСК"], f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/"
-                                                           f"flat_import_vsk_tracking_update")
-        self.write_rows_by_terminal(df, "export", ["НУТЭП"], f"{os.environ['XL_IDP_PATH_EXPORT']}/"
-                                                             f"lines_nutep/flat_export_nutep_tracking_update")
-        self.write_rows_by_terminal(df, "export", ["ВСК"], f"{os.environ['XL_IDP_PATH_VSK_EXPORT']}/"
-                                                           f"flat_export_vsk_tracking_update")
-        self.write_rows_by_terminal(df, "export", ["ПКТ", "УЛКТ", "ПЛП"], f"{os.environ['XL_IDP_PATH_NW_EXPORT']}/"
-                                                                          f"flat_export_nw_tracking_update")
+        self.write_rows_by_terminal(df, "import", ["НУТЭП"],
+                                    f"{os.environ['XL_IDP_PATH_IMPORT']}/lines_nutep/flat_import_nutep_tracking_update")
+        self.write_rows_by_terminal(df, "import", ["ВСК"],
+                                    f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/flat_import_vsk_tracking_update")
+        self.write_rows_by_terminal(df, "export", ["НУТЭП"],
+                                    f"{os.environ['XL_IDP_PATH_EXPORT']}/lines_nutep/flat_export_nutep_tracking_update")
+        self.write_rows_by_terminal(df, "export", ["ВСК"],
+                                    f"{os.environ['XL_IDP_PATH_VSK_EXPORT']}/flat_export_vsk_tracking_update")
+        self.write_rows_by_terminal(df, "export", ["ПКТ", "УЛКТ", "ПЛП"],
+                                    f"{os.environ['XL_IDP_PATH_NW_EXPORT']}/flat_export_nw_tracking_update")
 
 
 if __name__ == "__main__":
