@@ -30,7 +30,7 @@ class AutoTracking(object):
                 if not column[0][0]:
                     column[1]['is_auto_tracking'] = False
                     column[1]['is_auto_tracking_ok'] = None
-                column[1].to_excel(f"{path}/{column[0][1].replace('.csv', '')}", engine="xlsxwriter", index=False)
+                column[1].to_excel(f"{path}/{column[0][1].replace('.csv', '').replace('.XLSX', '.xlsx')}", index=False)
 
     @staticmethod
     def change_types_in_columns(df: DataFrame) -> None:
