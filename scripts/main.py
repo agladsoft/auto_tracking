@@ -30,7 +30,7 @@ class AutoTracking(object):
                 if not column[0][0]:
                     column[1]['is_auto_tracking'] = False
                     column[1]['is_auto_tracking_ok'] = None
-                column[1].to_excel(f"{path}/{column[0][1].replace('.csv', '')}", index=False)
+                column[1].to_excel(f"{path}/{column[0][1].replace('.csv', '')}", engine="openpyxl", index=False)
 
     @staticmethod
     def change_types_in_columns(df: DataFrame) -> None:
@@ -50,6 +50,11 @@ class AutoTracking(object):
         """
         df: DataFrame = pd.read_excel(self.input_file_path)
         self.change_types_in_columns(df)
+        os.environ["XL_IDP_PATH_IMPORT"] = "/home/timur/sambashare/import"
+        os.environ["XL_IDP_PATH_VSK_IMPORT"] = "/home/timur/sambashare/import/import_vsk"
+        os.environ["XL_IDP_PATH_EXPORT"] = "/home/timur/sambashare/export"
+        os.environ["XL_IDP_PATH_VSK_EXPORT"] = "/home/timur/sambashare/export/export_vsk"
+        os.environ["XL_IDP_PATH_NW_EXPORT"] = "/home/timur/sambashare/export/export_nw"
         self.write_rows_by_terminal(df, "import", ["НУТЭП"],
                                     f"{os.environ['XL_IDP_PATH_IMPORT']}/lines_nutep/flat_import_nutep_tracking_update")
         self.write_rows_by_terminal(df, "import", ["ВСК"],
