@@ -3,13 +3,6 @@ import sys
 import pandas as pd
 from pandas import DataFrame
 from typing import Tuple, Optional
-from pandas.core.groupby import DataFrameGroupBy
-
-os.environ["XL_IDP_PATH_IMPORT"] = "/home/timur/sambashare/import"
-os.environ["XL_IDP_PATH_VSK_IMPORT"] = "/home/timur/sambashare/import/import_vsk"
-os.environ["XL_IDP_PATH_EXPORT"] = "/home/timur/sambashare/export"
-os.environ["XL_IDP_PATH_VSK_EXPORT"] = "/home/timur/sambashare/export/export_vsk"
-os.environ["XL_IDP_PATH_NW_EXPORT"] = "/home/timur/sambashare/export/export_nw"
 
 
 DIRECTIONS = {
