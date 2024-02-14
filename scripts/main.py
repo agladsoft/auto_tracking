@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 from pandas import DataFrame
 from typing import Tuple, Optional
+from pandas.core.groupby import DataFrameGroupBy
 
 
 DIRECTIONS = {
@@ -20,7 +21,38 @@ class AutoTracking(object):
         self.input_file_path: str = input_file_path
 
     @staticmethod
-    def write_rows_by_terminal(df: DataFrame, direction: str, terminals: list, path: Optional[str]) -> None:
+    def write_cabotage(direction: str, path: Optional[str], group_columns: DataFrameGroupBy, directions: list) -> None:
+        """
+        Find and save cabotage in file.
+        :param direction: Value of direction.
+        :param path: The path of the folder to save.
+        :param group_columns: Grouped data by columns ['enforce_auto_tracking', 'original_file_name'].
+        :param directions: Found directions in files.
+        :return:
+        """
+        filtered_groups = {
+            direction: group_columns.filter(
+                lambda x: x['original_file_name'].str.contains(direction, case=False).all()
+            )
+            for direction in directions
+        }
+        if not directions:
+            raise AssertionError("В наименовании файла не указано направление для каботажа")
+        column: DataFrame
+        for direction_, column in list(filtered_groups.items()):
+            if column.empty:
+                continue
+            column['is_auto_tracking'] = False
+            column['is_auto_tracking_ok'] = None
+            for key, value in DIRECTIONS.items():
+                if direction_ in value:
+                    path = value[1]
+            column.to_excel(
+                f"{path}/{column['original_file_name'].unique()[0].replace('.csv', '').replace('.XLSX', '.xlsx')}",
+                index=False
+            )
+
+    def write_rows_by_terminal(self, df: DataFrame, direction: str, terminals: list, path: Optional[str]) -> None:
         """
         We group by 'enforce_auto_tracking', 'year', 'month' and write it to a separate xlsx file.
         :param df: DataFrame.
@@ -35,25 +67,15 @@ class AutoTracking(object):
             df: DataFrame = df.loc[(df['terminal'] == terminal) & (df['direction'] == direction)]
             group_columns = df.groupby(['enforce_auto_tracking', 'original_file_name'])
             directions = [direction_[0] for direction_ in list(DIRECTIONS.values())]
-            filtered_groups = {
-                direction: group_columns.filter(
-                    lambda x: x['original_file_name'].str.contains(direction, case=False).all()
-                )
-                for direction in directions
-            }
-
-            if not directions and direction == "cabotage":
-                raise AssertionError("В наименовании файла не указано направление для каботажа")
-            column: DataFrame
-            for direction_, column in list(filtered_groups.items()):
-                if column.empty:
-                    continue
-                column['is_auto_tracking'] = False
-                column['is_auto_tracking_ok'] = None
-                for key, value in DIRECTIONS.items():
-                    if direction_ in value:
-                        path = value[1]
-                column.to_excel(f"{path}/{column['original_file_name'].unique()[0].replace('.csv', '').replace('.XLSX', '.xlsx')}", index=False)
+            if direction == "cabotage":
+                self.write_cabotage(direction, path, group_columns, directions)
+                continue
+            column: Tuple[Tuple, DataFrame]
+            for column in group_columns:
+                if not column[0][0]:
+                    column[1]['is_auto_tracking'] = False
+                    column[1]['is_auto_tracking_ok'] = None
+                column[1].to_excel(f"{path}/{column[0][1].replace('.csv', '').replace('.XLSX', '.xlsx')}", index=False)
 
     @staticmethod
     def change_types_in_columns(df: DataFrame) -> None:
