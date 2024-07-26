@@ -99,6 +99,8 @@ class AutoTracking(object):
                                     f"{os.environ['XL_IDP_PATH_IMPORT']}/lines_nutep/flat_import_nutep_tracking_update")
         self.write_rows_by_terminal(df, list(DIRECTIONS.keys())[0], ["ВСК"],
                                     f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/flat_import_vsk_tracking_update")
+        self.write_rows_by_terminal(df, list(DIRECTIONS.keys())[1], ["ПКТ", "УЛКТ", "ПЛП"],
+                                    f"{os.environ['XL_IDP_PATH_NW_IMPORT']}/flat_import_nw_tracking_update")
         self.write_rows_by_terminal(df, "cabotage", ["ВСК"], None)
         self.write_rows_by_terminal(df, list(DIRECTIONS.keys())[1], ["НУТЭП"],
                                     f"{os.environ['XL_IDP_PATH_EXPORT']}/lines_nutep/flat_export_nutep_tracking_update")
