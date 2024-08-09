@@ -65,17 +65,14 @@ class AutoTracking(object):
             os.mkdir(path)
         for terminal in terminals:
             df: DataFrame = df.loc[(df['terminal'] == terminal) & (df['direction'] == direction)]
-            group_columns = df.groupby(['enforce_auto_tracking', 'original_file_name'])
+            group_columns = df.groupby(['original_file_name'])
             directions = [direction_[0] for direction_ in list(DIRECTIONS.values())]
             if direction == "cabotage":
                 self.write_cabotage(direction, path, group_columns, directions)
                 continue
-            column: Tuple[Tuple, DataFrame]
+            column: DataFrame
             for column in group_columns:
-                if not column[0][0]:
-                    column[1]['is_auto_tracking'] = False
-                    column[1]['is_auto_tracking_ok'] = None
-                column[1].to_excel(f"{path}/{column[0][1].replace('.csv', '').replace('.XLSX', '.xlsx')}", index=False)
+                column[1].to_excel(f"{path}/{column[0].replace('.csv', '').replace('.XLSX', '.xlsx')}", index=False)
 
     @staticmethod
     def change_types_in_columns(df: DataFrame) -> None:
