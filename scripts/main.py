@@ -63,14 +63,20 @@ class AutoTracking(object):
         """
         if path and not os.path.exists(path):
             os.mkdir(path)
-        group_columns = df.groupby(['original_file_name'])
-        directions = [direction_[0] for direction_ in list(DIRECTIONS.values())]
-        if direction == "cabotage":
-            self.write_cabotage(direction, path, group_columns, directions)
-        else:
-            column: DataFrame
-            for column in group_columns:
-                column[1].to_excel(f"{path}/{column[0].replace('.csv', '').replace('.XLSX', '.xlsx')}", index=False)
+        df_group_combined = pd.DataFrame()
+        for terminal in terminals:
+            df_group = df.loc[(df['terminal'] == terminal) & (df['direction'] == direction)]
+            if not df_group.empty:
+                df_group_combined = pd.concat([df_group_combined, df_group])
+        if not df_group_combined.empty:
+            group_columns = df_group_combined.groupby(['original_file_name'])
+            directions = [direction_[0] for direction_ in list(DIRECTIONS.values())]
+            if direction == "cabotage":
+                self.write_cabotage(direction, path, group_columns, directions)
+            else:
+                column: DataFrame
+                for column in group_columns:
+                    column[1].to_excel(f"{path}/{column[0].replace('.csv', '').replace('.XLSX', '.xlsx')}", index=False)
 
     @staticmethod
     def change_types_in_columns(df: DataFrame) -> None:
