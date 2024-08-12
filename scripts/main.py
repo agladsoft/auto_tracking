@@ -1,8 +1,8 @@
 import os
 import sys
 import pandas as pd
+from typing import Optional
 from pandas import DataFrame
-from typing import Tuple, Optional
 from pandas.core.groupby import DataFrameGroupBy
 
 
@@ -63,13 +63,11 @@ class AutoTracking(object):
         """
         if path and not os.path.exists(path):
             os.mkdir(path)
-        for terminal in terminals:
-            df: DataFrame = df.loc[(df['terminal'] == terminal) & (df['direction'] == direction)]
-            group_columns = df.groupby(['original_file_name'])
-            directions = [direction_[0] for direction_ in list(DIRECTIONS.values())]
-            if direction == "cabotage":
-                self.write_cabotage(direction, path, group_columns, directions)
-                continue
+        group_columns = df.groupby(['original_file_name'])
+        directions = [direction_[0] for direction_ in list(DIRECTIONS.values())]
+        if direction == "cabotage":
+            self.write_cabotage(direction, path, group_columns, directions)
+        else:
             column: DataFrame
             for column in group_columns:
                 column[1].to_excel(f"{path}/{column[0].replace('.csv', '').replace('.XLSX', '.xlsx')}", index=False)
