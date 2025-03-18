@@ -6,7 +6,6 @@ from _pytest.monkeypatch import MonkeyPatch
 from scripts.main import AutoTracking, DataFrameGroupBy, Optional
 
 @pytest.fixture
-
 def sample_dataframe() -> pd.DataFrame:
     data: dict = {
         'enforce_auto_tracking': [True, False, True, True, False, True],
