@@ -6,111 +6,112 @@ from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 
 
-DIRECTIONS = {
-    "import": ["ИМПОРТ", f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/flat_import_vsk_tracking_update"],
-    "export": ["ЭКСПОРТ", f"{os.environ['XL_IDP_PATH_VSK_EXPORT']}/flat_export_vsk_tracking_update"]
-}
-
-
-def all_(iterable):
-    return all(iterable) if iterable else False
-
-
-class AutoTracking(object):
+class AutoTracking:
     def __init__(self, input_file_path: str):
         self.input_file_path: str = input_file_path
+        # Keys is direction, values is direction in data file and path of directories. Terminal is None.
+        self.directions_cabotage: dict = {
+            "import": ["ИМПОРТ", f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/flat_import_vsk_tracking_update"],
+            "export": ["ЭКСПОРТ", f"{os.environ['XL_IDP_PATH_VSK_EXPORT']}/flat_export_vsk_tracking_update"]
+        }
 
     @staticmethod
-    def write_cabotage(direction: str, path: Optional[str], group_columns: DataFrameGroupBy, directions: list) -> None:
+    def save_to_excel(group_columns: DataFrameGroupBy, path: Optional[str]) -> None:
         """
-        Find and save cabotage in file.
-        :param direction: Value of direction.
-        :param path: The path of the folder to save.
-        :param group_columns: Grouped data by columns ['enforce_auto_tracking', 'original_file_name'].
-        :param directions: Found directions in files.
-        :return:
+        Save grouped DataFrame to Excel files in the specified directory.
+
+        :param group_columns: The grouped DataFrame by original file name.
+        :param path: The directory path where the Excel files will be saved.  If None, no files will be saved.
+        :return: None
         """
-        filtered_groups = {
-            direction: group_columns.filter(
-                lambda x: x['original_file_name'].str.contains(direction, case=False).all()
-            )
-            for direction in directions
+        if path:
+            os.makedirs(path, exist_ok=True)
+            filename: str
+            for filename, df in group_columns:
+                df.to_excel(f"{path}/{filename.replace('.csv', '').replace('.XLSX', '.xlsx')}", index=False)
+
+    def write_cabotage(self, group_columns: DataFrameGroupBy) -> None:
+        """
+        Write grouped DataFrame to Excel files in the specified directory, depending on the direction in the file name.
+
+        :param group_columns: The grouped DataFrame by original file name.
+        :return: None
+        """
+        directions: dict = {d[0]: d[1] for d in self.directions_cabotage.values()}
+        filtered_groups: dict = {
+            d: group_columns.filter(lambda x: x['original_file_name'].str.contains(d, case=False).all())
+            for d in directions
         }
         if not directions:
             raise AssertionError("В наименовании файла не указано направление для каботажа")
-        column: DataFrame
-        for direction_, column in list(filtered_groups.items()):
+
+        for direction, column in filtered_groups.items():
             if column.empty:
                 continue
-            column['is_auto_tracking'] = False
-            column['is_auto_tracking_ok'] = None
-            for key, value in DIRECTIONS.items():
-                if direction_ in value:
-                    path = value[1]
-            column.to_excel(
-                f"{path}/{column['original_file_name'].unique()[0].replace('.csv', '').replace('.XLSX', '.xlsx')}",
-                index=False
-            )
+            column[['is_auto_tracking', 'is_auto_tracking_ok']] = [False, None]
+            self.save_to_excel(column.groupby(['original_file_name']), directions[direction])
 
     def write_rows_by_terminal(self, df: DataFrame, direction: str, terminals: list, path: Optional[str]) -> None:
         """
-        We group by 'enforce_auto_tracking', 'year', 'month' and write it to a separate xlsx file.
-        :param df: DataFrame.
-        :param direction: Value of direction.
-        :param terminals: List of value of terminal.
-        :param path: The path of the folder to save.
-        :return:
+        Write grouped DataFrame to Excel files in the specified directory, depending on the direction in the file name
+        and terminal in the DataFrame.
+
+        :param df: The DataFrame to filter and save.
+        :param direction: The direction in the file name.
+        :param terminals: The list of terminals to filter the DataFrame.
+        :param path: The directory path where the Excel files will be saved.  If None, no files will be saved.
+        :return: None
         """
-        if path and not os.path.exists(path):
-            os.mkdir(path)
-        df_group_combined = pd.DataFrame()
-        for terminal in terminals:
-            df_group = df.loc[(df['terminal'] == terminal) & (df['direction'] == direction)]
-            if not df_group.empty:
-                df_group_combined = pd.concat([df_group_combined, df_group])
-        if not df_group_combined.empty:
-            group_columns = df_group_combined.groupby(['original_file_name'])
-            directions = [direction_[0] for direction_ in list(DIRECTIONS.values())]
-            if direction == "cabotage":
-                self.write_cabotage(direction, path, group_columns, directions)
-            else:
-                column: DataFrame
-                for column in group_columns:
-                    column[1].to_excel(f"{path}/{column[0].replace('.csv', '').replace('.XLSX', '.xlsx')}", index=False)
+        df_filtered: pd.DataFrame = df[df['terminal'].isin(terminals) & (df['direction'] == direction)]
+        if df_filtered.empty:
+            return
+
+        group_columns: DataFrameGroupBy = df_filtered.groupby(['original_file_name'])
+        if direction == "cabotage":
+            self.write_cabotage(group_columns)
+        else:
+            self.save_to_excel(group_columns, path)
 
     @staticmethod
     def change_types_in_columns(df: DataFrame) -> None:
         """
-        Change types in columns to bool.
-        :param df: DataFrame.
-        :return:
+        Change type of columns to bool.
+
+        :param df: The DataFrame to change column types of.
+        :return: None
         """
-        df["enforce_auto_tracking"] = df["enforce_auto_tracking"].astype(bool)
-        df["is_auto_tracking"] = df["is_auto_tracking"].astype(bool)
-        df["is_auto_tracking_ok"] = df["is_auto_tracking_ok"].astype(bool)
+        for col in ["enforce_auto_tracking", "is_auto_tracking", "is_auto_tracking_ok"]:
+            df[col] = df[col].astype(bool)
 
     def main(self) -> None:
         """
-        The main function where we read the Excel file and write the file to json.
-        :return:
-        """
-        df: DataFrame = pd.read_excel(self.input_file_path)
-        self.change_types_in_columns(df)
-        self.write_rows_by_terminal(df, list(DIRECTIONS.keys())[0], ["НУТЭП"],
-                                    f"{os.environ['XL_IDP_PATH_IMPORT']}/lines_nutep/flat_import_nutep_tracking_update")
-        self.write_rows_by_terminal(df, list(DIRECTIONS.keys())[0], ["ВСК"],
-                                    f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/flat_import_vsk_tracking_update")
-        self.write_rows_by_terminal(df, list(DIRECTIONS.keys())[0], ["ПКТ", "УЛКТ", "ПЛП"],
-                                    f"{os.environ['XL_IDP_PATH_NW_IMPORT']}/flat_import_nw_tracking_update")
-        self.write_rows_by_terminal(df, "cabotage", ["ВСК"], None)
-        self.write_rows_by_terminal(df, list(DIRECTIONS.keys())[1], ["НУТЭП"],
-                                    f"{os.environ['XL_IDP_PATH_EXPORT']}/lines_nutep/flat_export_nutep_tracking_update")
-        self.write_rows_by_terminal(df, list(DIRECTIONS.keys())[1], ["ВСК"],
-                                    f"{os.environ['XL_IDP_PATH_VSK_EXPORT']}/flat_export_vsk_tracking_update")
-        self.write_rows_by_terminal(df, list(DIRECTIONS.keys())[1], ["ПКТ", "УЛКТ", "ПЛП"],
-                                    f"{os.environ['XL_IDP_PATH_NW_EXPORT']}/flat_export_nw_tracking_update")
+        Read an Excel file, change types of columns to bool, and write each terminal to its own Excel file.
 
+        :return: None
+        """
+        df: pd.DataFrame = pd.read_excel(self.input_file_path)  # type: ignore
+        self.change_types_in_columns(df)
+
+        # Keys is direction, values is (keys is terminals and values is path of directories)
+        paths: dict = {
+            "import": {
+                "НУТЭП": f"{os.environ['XL_IDP_PATH_IMPORT']}/lines_nutep/flat_import_nutep_tracking_update",
+                "ВСК": f"{os.environ['XL_IDP_PATH_VSK_IMPORT']}/flat_import_vsk_tracking_update",
+                "ПКТ,УЛКТ,ПЛП": f"{os.environ['XL_IDP_PATH_NW_IMPORT']}/flat_import_nw_tracking_update"
+            },
+            "export": {
+                "НУТЭП": f"{os.environ['XL_IDP_PATH_EXPORT']}/lines_nutep/flat_export_nutep_tracking_update",
+                "ВСК": f"{os.environ['XL_IDP_PATH_VSK_EXPORT']}/flat_export_vsk_tracking_update",
+                "ПКТ,УЛКТ,ПЛП": f"{os.environ['XL_IDP_PATH_NW_EXPORT']}/flat_export_nw_tracking_update"
+            },
+            "cabotage": {
+                "ВСК": None
+            }
+        }
+
+        for direction, terminals in paths.items():
+            for terminal, path in terminals.items():
+                self.write_rows_by_terminal(df, direction, terminal.split(','), path)
 
 if __name__ == "__main__":
-    auto_tracking: AutoTracking = AutoTracking(sys.argv[1])
-    auto_tracking.main()
+    AutoTracking(sys.argv[1]).main()
