@@ -106,8 +106,8 @@ def test_write_rows_by_terminal(
         assert os.path.exists(f"{str(tmp_path)}/{file}")
 
 
-def test_change_types_in_columns(sample_dataframe: pd.DataFrame) -> None:
-    AutoTracking.change_types_in_columns(sample_dataframe)
+def test_change_types_in_columns(auto_tracking_instance: AutoTracking, sample_dataframe: pd.DataFrame) -> None:
+    auto_tracking_instance.change_types_in_columns(sample_dataframe)
     assert sample_dataframe["enforce_auto_tracking"].dtype == bool
     assert sample_dataframe["is_auto_tracking"].dtype == bool
     assert sample_dataframe["is_auto_tracking_ok"].dtype == bool
